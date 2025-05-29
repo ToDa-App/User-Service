@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -39,7 +41,7 @@ public class UserServiceImpl implements UserService {
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
         String otpCode = generateSixDigitOtp();
-        LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(1);
         Otp otp = Otp.builder()
                 .otp(otpCode)
                 .expirationTime(expiry)
@@ -49,7 +51,7 @@ public class UserServiceImpl implements UserService {
         emailService.sendOtpToEmail(user.getEmail(), otpCode);
     }
     public String generateSixDigitOtp() {
-        int otp = (int)(Math.random() * 900000) + 100000; // يولد رقم من 100000 لـ 999999
+        int otp = (int)(Math.random() * 900000) + 100000;
         return String.valueOf(otp);
     }
     @Override
@@ -71,4 +73,31 @@ public class UserServiceImpl implements UserService {
         user.setEnabled(true);
         userRepository.save(user);
     }
+    public void resendOtp(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.isEnabled()) {
+            throw new RuntimeException("Account is already activated");
+        }
+        Optional<Otp> latestOtpOpt = otpRepository.findTopByUser_EmailOrderByExpirationTimeDesc(email);
+        if (latestOtpOpt.isPresent()) {
+            Otp latestOtp = latestOtpOpt.get();
+            LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
+            if (latestOtp.getCreatedAt().isAfter(oneMinuteAgo)) {
+                throw new RuntimeException("You can request a new OTP only after 1 minute");
+            }
+        }
+        String newOtp = generateSixDigitOtp();
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(1);
+        Otp otp = Otp.builder()
+                .otp(newOtp)
+                .expirationTime(expiry)
+                .createdAt(LocalDateTime.now())
+                .user(user)
+                .build();
+        otpRepository.save(otp);
+        emailService.sendOtpToEmail(email, newOtp);
+    }
+
 }

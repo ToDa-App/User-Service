@@ -35,5 +35,10 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST)
                 .body(ApiGenericResponse.error(ex.getMessage()));
     }
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiGenericResponse<Object>> handleRuntimeException(RuntimeException ex) {
+        ApiGenericResponse<Object> response = ApiGenericResponse.error(ex.getMessage());
+        return ResponseEntity.badRequest().body(response);
+    }
 
 }

@@ -6,4 +6,5 @@ import com.toda.User_Service.dto.RegisterRequest;
 public interface UserService {
     void register(RegisterRequest request);
     void activate(ActivateAccountRequest request);
+    void resendOtp(String email);
 }
