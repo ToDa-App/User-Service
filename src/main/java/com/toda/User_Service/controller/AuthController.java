@@ -1,8 +1,6 @@
 package com.toda.User_Service.controller;
 
-import com.toda.User_Service.dto.ActivateAccountRequest;
-import com.toda.User_Service.dto.RegisterRequest;
-import com.toda.User_Service.dto.ResendOtpRequest;
+import com.toda.User_Service.dto.*;
 import com.toda.User_Service.exception.ApiGenericResponse;
 import com.toda.User_Service.service.UserService;
 import jakarta.validation.Valid;
@@ -32,5 +30,10 @@ public class AuthController {
     public ResponseEntity<ApiGenericResponse<Object>> resendOtp(@Valid @RequestBody ResendOtpRequest request) {
         userService.resendOtp(request.getEmail());
         return ResponseEntity.ok(ApiGenericResponse.success("OTP resent successfully", null));
+    }
+    @PostMapping("/login")
+    public ResponseEntity<ApiGenericResponse<AuthResponse>> signIn(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = userService.login(request);
+        return ResponseEntity.ok(ApiGenericResponse.success("User logged in successfully", response));
     }
 }

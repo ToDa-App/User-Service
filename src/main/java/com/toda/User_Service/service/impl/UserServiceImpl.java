@@ -1,11 +1,14 @@
 package com.toda.User_Service.service.impl;
 
 import com.toda.User_Service.dto.ActivateAccountRequest;
+import com.toda.User_Service.dto.AuthResponse;
+import com.toda.User_Service.dto.LoginRequest;
 import com.toda.User_Service.dto.RegisterRequest;
 import com.toda.User_Service.entity.Otp;
 import com.toda.User_Service.entity.User;
 import com.toda.User_Service.repository.OtpRepository;
 import com.toda.User_Service.repository.UserRepository;
+import com.toda.User_Service.security.JwtUtil;
 import com.toda.User_Service.service.EmailService;
 import com.toda.User_Service.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,7 @@ public class UserServiceImpl implements UserService {
     private final OtpRepository otpRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final JwtUtil jwtUtil;
     @Override
     public void register(RegisterRequest request) {
         if (!request.getPassword().equals(request.getConfirmPassword())) {
@@ -99,5 +103,13 @@ public class UserServiceImpl implements UserService {
         otpRepository.save(otp);
         emailService.sendOtpToEmail(email, newOtp);
     }
-
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email"));
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "password is incorrect");
+        }
+        String token = jwtUtil.generateToken(user.getEmail());
+        return new AuthResponse(token);
+    }
 }
