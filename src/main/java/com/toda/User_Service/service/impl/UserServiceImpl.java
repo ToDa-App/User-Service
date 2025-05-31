@@ -82,14 +82,14 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
     @Override
-    public void resendOtp(String email) {
-        User user = userRepository.findByEmail(email)
+    public void resendOtp(ResendOtpRequest request) {
+        User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         if (user.isEnabled()) {
             throw new RuntimeException("Account is already activated");
         }
-        Optional<Otp> latestOtpOpt = otpRepository.findTopByUser_EmailOrderByExpirationTimeDesc(email);
+        Optional<Otp> latestOtpOpt = otpRepository.findTopByUser_EmailOrderByExpirationTimeDesc(request.getEmail());
         if (latestOtpOpt.isPresent()) {
             Otp latestOtp = latestOtpOpt.get();
             LocalDateTime oneMinuteAgo = LocalDateTime.now().minusMinutes(1);
@@ -106,7 +106,7 @@ public class UserServiceImpl implements UserService {
                 .user(user)
                 .build();
         otpRepository.save(otp);
-        emailService.sendOtpToEmail(email, newOtp);
+        emailService.sendOtpToEmail(request.getEmail(), newOtp);
     }
     @Override
     public AuthResponse login(LoginRequest request) {

@@ -5,7 +5,7 @@ import com.toda.User_Service.dto.*;
 public interface UserService {
     void register(RegisterRequest request);
     void activate(ActivateAccountRequest request);
-    void resendOtp(String email);
+    void resendOtp(ResendOtpRequest request);
     AuthResponse login(LoginRequest request);
     String generateSixDigitOtp();
     void sendResetCode(ForgetPasswordRequest request);

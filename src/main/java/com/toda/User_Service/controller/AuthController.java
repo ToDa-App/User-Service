@@ -32,7 +32,7 @@ public class AuthController {
     }
     @PostMapping("/resend-otp")
     public ResponseEntity<ApiGenericResponse<Object>> resendOtp(@Valid @RequestBody ResendOtpRequest request) {
-        userService.resendOtp(request.getEmail());
+        userService.resendOtp(request);
         return ResponseEntity.ok(ApiGenericResponse.success("OTP resent successfully", null));
     }
     @PostMapping("/login")
