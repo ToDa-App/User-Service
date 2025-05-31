@@ -36,4 +36,5 @@ public class AuthController {
         AuthResponse response = userService.login(request);
         return ResponseEntity.ok(ApiGenericResponse.success("User logged in successfully", response));
     }
+
 }
