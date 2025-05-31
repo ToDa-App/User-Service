@@ -12,4 +12,5 @@ public interface UserService {
     void logout(String token);
     void changePassword(String email, ChangePasswordRequest request);
     void resetPassword(ResetPasswordRequest request);
+    AuthResponse refreshToken(RefreshTokenRequest request);
 }

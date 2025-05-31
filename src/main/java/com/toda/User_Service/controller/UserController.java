@@ -10,15 +10,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
 @RestController
 @RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-
     @PostMapping("/logout")
     public ResponseEntity<ApiGenericResponse<Object>> logout(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
@@ -32,13 +29,11 @@ public class UserController {
         userService.changePassword(user.getEmail(), request);
         return ResponseEntity.ok(ApiGenericResponse.success("Password changed successfully", null));
     }
-
     @PostMapping("/forget-password")
     public ResponseEntity<ApiGenericResponse<Object>> forgetPassword(@Valid @RequestBody ForgetPasswordRequest request) {
         userService.sendResetCode(request);
         return ResponseEntity.ok(ApiGenericResponse.success("Reset code sent to email", null));
     }
-
     @PostMapping("/reset-password")
     public ResponseEntity<ApiGenericResponse<Object>> resetPassword(@RequestBody @Valid ResetPasswordRequest request) {
         userService.resetPassword(request);

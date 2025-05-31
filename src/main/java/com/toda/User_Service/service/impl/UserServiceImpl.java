@@ -19,9 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
-import java.util.Random;
-
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -113,21 +112,21 @@ public class UserServiceImpl implements UserService {
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email"));
+        if (!user.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Account is not activated. Please check your email.");
+        }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Password is incorrect");
         }
-        String token = jwtUtil.generateToken(user.getEmail());
-        LocalDateTime createdAt = LocalDateTime.now();
-        LocalDateTime expiry = createdAt.plusHours(1);
-        JwtToken jwtToken = JwtToken.builder()
-                .token(token)
-                .tokenType("Bearer")
-                .createdAt(createdAt)
-                .expirationDate(expiry)
-                .user(user)
-                .build();
-        jwtRepository.save(jwtToken);
-        return new AuthResponse(token);
+        String accessToken = jwtUtil.generateToken(user.getEmail(), 1);
+        String refreshToken = jwtUtil.generateToken(user.getEmail(), 7 * 24);
+        jwtRepository.saveAll(List.of(
+                JwtToken.builder().token(accessToken).tokenType("Bearer").createdAt(LocalDateTime.now())
+                        .expirationDate(LocalDateTime.now().plusHours(1)).isRefreshToken(false).user(user).build(),
+                JwtToken.builder().token(refreshToken).tokenType("Bearer").createdAt(LocalDateTime.now())
+                        .expirationDate(LocalDateTime.now().plusDays(7)).isRefreshToken(true).user(user).build()
+        ));
+        return new AuthResponse(accessToken, refreshToken);
     }
     @Override
     public void sendResetCode(ForgetPasswordRequest request) {
@@ -185,5 +184,29 @@ public class UserServiceImpl implements UserService {
         }
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+    }
+    @Override
+    public AuthResponse refreshToken(RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+        if (!jwtUtil.validateToken(refreshToken)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
+        }
+        String email = jwtUtil.getEmailFromToken(refreshToken);
+        JwtToken token = jwtRepository.findByToken(refreshToken)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Refresh token not found"));
+        if (!token.isRefreshToken() || token.getExpirationDate().isBefore(LocalDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Refresh token is expired or invalid");
+        }
+        String newAccessToken = jwtUtil.generateToken(email, 1);
+        JwtToken newToken = JwtToken.builder()
+                .token(newAccessToken)
+                .tokenType("Bearer")
+                .isRefreshToken(false)
+                .user(token.getUser())
+                .createdAt(LocalDateTime.now())
+                .expirationDate(LocalDateTime.now().plusHours(1))
+                .build();
+        jwtRepository.save(newToken);
+        return new AuthResponse(newAccessToken, refreshToken);
     }
 }

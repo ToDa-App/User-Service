@@ -1,10 +1,14 @@
 package com.toda.User_Service.controller;
 
 import com.toda.User_Service.dto.*;
+import com.toda.User_Service.entity.JwtToken;
 import com.toda.User_Service.exception.ApiGenericResponse;
+import com.toda.User_Service.repository.JwtRepository;
+import com.toda.User_Service.security.JwtUtil;
 import com.toda.User_Service.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,6 +39,10 @@ public class AuthController {
     public ResponseEntity<ApiGenericResponse<AuthResponse>> signIn(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = userService.login(request);
         return ResponseEntity.ok(ApiGenericResponse.success("User logged in successfully", response));
+    }
+    @PostMapping("refresh")
+    public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(userService.refreshToken(request));
     }
 
 }

@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 @Component
 public class JwtUtil {
@@ -28,16 +30,24 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
-    public String generateToken(String email) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
-        return Jwts.builder()
-                .setSubject(email)
-                .setIssuedAt(now)
-                .setExpiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS256)
-                .compact();
-    }
+//    public String generateToken(String email) {
+//        Date now = new Date();
+//        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+//        return Jwts.builder()
+//                .setSubject(email)
+//                .setIssuedAt(now)
+//                .setExpiration(expiryDate)
+//                .signWith(key, SignatureAlgorithm.HS256)
+//                .compact();
+//    }
+public String generateToken(String email, int hours) {
+    return Jwts.builder()
+            .setSubject(email)
+            .setIssuedAt(new Date())
+            .setExpiration(Date.from(LocalDateTime.now().plusHours(hours).atZone(ZoneId.systemDefault()).toInstant()))
+            .signWith(key, SignatureAlgorithm.HS256)
+            .compact();
+}
     public String getEmailFromToken(String token) {
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)

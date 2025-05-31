@@ -30,6 +30,7 @@ public class JwtToken {
 
     @Column(name = "expiration_date", nullable = false)
     private LocalDateTime expirationDate;
+    private boolean isRefreshToken;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
