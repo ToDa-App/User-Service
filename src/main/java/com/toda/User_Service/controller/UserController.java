@@ -54,4 +54,9 @@ public class UserController {
                 "profileImageUrl", user.getProfileImageUrl()
         ));
     }
+    @DeleteMapping
+    public ResponseEntity<Map<String, String>> deleteUserAccount(@AuthenticationPrincipal User user) {
+        userService.deleteUserAccount(user.getEmail());
+        return ResponseEntity.ok(Map.of("message", "User account deleted successfully"));
+    }
 }

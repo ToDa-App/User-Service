@@ -17,4 +17,5 @@ public interface UserService {
     AuthResponse refreshToken(RefreshTokenRequest request);
     UserProfileResponse getProfile(String email);
     void updateProfile(User user, MultipartFile image, String nickname);
+    void deleteUserAccount(String email);
 }

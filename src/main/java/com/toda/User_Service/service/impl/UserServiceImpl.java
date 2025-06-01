@@ -247,5 +247,11 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.save(user);
     }
+    @Override
+    public void deleteUserAccount(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        userRepository.delete(user);
+    }
 
 }
