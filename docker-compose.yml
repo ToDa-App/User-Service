@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: user-service-database
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: userservicedb
+      MYSQL_USER: Habiba
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    build: .
+    container_name: user-service
+    depends_on:
+      - mysql
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/userservicedb
+      SPRING_DATASOURCE_USERNAME: Habiba
+      SPRING_DATASOURCE_PASSWORD: 1234
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      JWT_SECRET_KEY: 6pC9zB!rT@uX1#VmK$eDqL7nW2fYjA0h
+      JWT_EXPIRATION: 3600000
+      EMAIL_USERNAME: ha2090245@gmail.com
+      EMAIL_PASSWORD: lcqr lhda wtbc caik
+    restart: always
+
+volumes:
+  mysql_data:
