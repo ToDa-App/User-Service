@@ -14,13 +14,22 @@ import com.toda.User_Service.service.EmailService;
 import com.toda.User_Service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -209,4 +218,34 @@ public class UserServiceImpl implements UserService {
         jwtRepository.save(newToken);
         return new AuthResponse(newAccessToken, refreshToken);
     }
+    @Override
+    public UserProfileResponse getProfile(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return new UserProfileResponse(
+                user.getNickname(),
+                user.getProfileImageUrl()
+        );
+    }
+    @Override
+    public void updateProfile(User user, MultipartFile image, String nickname) {
+        if (nickname != null) {
+            user.setNickname(nickname);
+        }
+        if (image != null && !image.isEmpty()) {
+            try {
+                String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
+                Path uploadPath = Paths.get("src/main/resources/static/uploads");
+                Files.createDirectories(uploadPath);
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+                String imageUrl = "/uploads/" + fileName;
+                user.setProfileImageUrl(imageUrl);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload image", e);
+            }
+        }
+        userRepository.save(user);
+    }
+
 }

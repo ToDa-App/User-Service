@@ -1,6 +1,8 @@
 package com.toda.User_Service.service;
 
 import com.toda.User_Service.dto.*;
+import com.toda.User_Service.entity.User;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
     void register(RegisterRequest request);
@@ -13,4 +15,6 @@ public interface UserService {
     void changePassword(String email, ChangePasswordRequest request);
     void resetPassword(ResetPasswordRequest request);
     AuthResponse refreshToken(RefreshTokenRequest request);
+    UserProfileResponse getProfile(String email);
+    void updateProfile(User user, MultipartFile image, String nickname);
 }

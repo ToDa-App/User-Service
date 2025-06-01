@@ -1,7 +1,10 @@
 package com.toda.User_Service.config;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.toda.User_Service.exception.ApiGenericResponse;
 import com.toda.User_Service.security.JwtAuthenticationFilter;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
@@ -30,6 +35,17 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated()
+                ).exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json");
+                            Map<String, String> errorDetails = Map.of("token", "Invalid token");
+                            ApiGenericResponse<Object> errorResponse =
+                                    ApiGenericResponse.error("You are not authorized",errorDetails);
+
+                            ObjectMapper mapper = new ObjectMapper();
+                            mapper.writeValue(response.getOutputStream(), errorResponse);
+                        })
                 ).addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

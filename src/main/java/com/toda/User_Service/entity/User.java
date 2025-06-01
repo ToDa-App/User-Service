@@ -47,4 +47,8 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<JwtToken> jwtTokens;
+    @Column(name = "nickname")
+    private String nickname;
+    @Column(name = "userimage")
+    private String profileImageUrl;
 }

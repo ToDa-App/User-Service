@@ -29,17 +29,6 @@ public class JwtUtil {
     public void init() {
         key = Keys.hmacShaKeyFor(secretKey.getBytes());
     }
-
-//    public String generateToken(String email) {
-//        Date now = new Date();
-//        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
-//        return Jwts.builder()
-//                .setSubject(email)
-//                .setIssuedAt(now)
-//                .setExpiration(expiryDate)
-//                .signWith(key, SignatureAlgorithm.HS256)
-//                .compact();
-//    }
 public String generateToken(String email, int hours) {
     return Jwts.builder()
             .setSubject(email)
