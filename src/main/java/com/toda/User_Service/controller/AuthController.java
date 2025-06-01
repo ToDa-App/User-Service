@@ -66,9 +66,10 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "Token refreshed successfully"),
             @ApiResponse(responseCode = "401", description = "Invalid or expired refresh token")
     })
-    @PostMapping("refresh")
-    public ResponseEntity<AuthResponse> refreshToken(@RequestBody RefreshTokenRequest request) {
-        return ResponseEntity.ok(userService.refreshToken(request));
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiGenericResponse<AuthResponse>> refreshToken(@RequestBody RefreshTokenRequest request) {
+        AuthResponse authResponse = userService.refreshToken(request);
+        return ResponseEntity.ok(ApiGenericResponse.success("Token refreshed successfully", authResponse));
     }
 
 }
