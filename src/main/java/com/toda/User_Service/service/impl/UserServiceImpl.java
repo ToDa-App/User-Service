@@ -120,12 +120,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid email"));
         if (!user.isEnabled()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Account is not activated. Please check your email.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Account is not activated. Please check your email.");
         }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Password is incorrect");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is incorrect");
         }
         String accessToken = jwtUtil.generateToken(user.getEmail(), 1);
         String refreshToken = jwtUtil.generateToken(user.getEmail(), 7 * 24);
