@@ -310,3 +310,7 @@ Authorization: Bearer <JWT_ACCESS_TOKEN>
 - Stored as URLs, e.g., `https://cdn.example.com/profile/<userId>.jpg`.
 
 ---
+### 📊 ER Diagram
+
+![ER Diagram]
+<td><img src="Documentation/UserServiceERD.PNG" width="1000" height="600"/></td>
