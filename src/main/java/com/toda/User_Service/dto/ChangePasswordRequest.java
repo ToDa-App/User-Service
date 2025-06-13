@@ -3,11 +3,13 @@ package com.toda.User_Service.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Schema(description = "Request to change user password")
 public class ChangePasswordRequest {
     @NotBlank(message = "currentPassword must not be blank")
