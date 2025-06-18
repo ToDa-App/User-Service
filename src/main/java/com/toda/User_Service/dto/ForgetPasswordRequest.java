@@ -13,7 +13,7 @@ import lombok.*;
 @Schema(description = "Request to initiate password reset")
 public class ForgetPasswordRequest {
     @Email
-    @NotBlank(message = "email must be not blank")
+    @NotBlank(message = "email is required")
     @Schema(description = "User email", example = "user@example.com")
     private String email;
 }
