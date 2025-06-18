@@ -25,8 +25,19 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ApiGenericResponse<Object>> handleResponseStatusException(ResponseStatusException ex) {
         Map<String, String> errors = new HashMap<>();
-        errors.put("error", ex.getReason());
-        ApiGenericResponse<Object> response = ApiGenericResponse.error(ex.getReason(),errors);
+        String raw = ex.getCause() != null ? ex.getCause().getMessage() : null;
+        if (raw != null && raw.startsWith("{") && raw.endsWith("}")) {
+            raw = raw.substring(1, raw.length() - 1);
+            for (String pair : raw.split(",")) {
+                String[] kv = pair.split("=");
+                if (kv.length == 2) {
+                    errors.put(kv[0].trim(), kv[1].trim());
+                }
+            }
+        } else if (ex.getReason() != null) {
+            errors.put("error", ex.getReason());
+        }
+        ApiGenericResponse<Object> response = ApiGenericResponse.error(ex.getReason(), errors);
         return new ResponseEntity<>(response, ex.getStatusCode());
     }
     @ExceptionHandler(IllegalArgumentException.class)

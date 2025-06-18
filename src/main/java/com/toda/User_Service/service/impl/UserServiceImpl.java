@@ -26,9 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -120,12 +118,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid email"));
+                .orElseThrow(() -> {
+                    Map<String, String> errors = new HashMap<>();
+                    errors.put("email", "Email not found");
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Email not found", new Throwable(errors.toString()));
+                });
         if (!user.isEnabled()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Account is not activated. Please check your email.");
         }
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is incorrect");
+            Map<String, String> errors = new HashMap<>();
+            errors.put("password", "Password is incorrect");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is incorrect", new Throwable(errors.toString()));
         }
         String accessToken = jwtUtil.generateToken(user.getEmail(), 1);
         String refreshToken = jwtUtil.generateToken(user.getEmail(), 7 * 24);
@@ -235,7 +239,7 @@ public class UserServiceImpl implements UserService {
         if (image != null && !image.isEmpty()) {
             try {
                 String fileName = UUID.randomUUID() + "_" + image.getOriginalFilename();
-                Path uploadPath = Paths.get("src/main/resources/static/uploads");
+                Path uploadPath = Paths.get("uploads");
                 Files.createDirectories(uploadPath);
                 Path filePath = uploadPath.resolve(fileName);
                 Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);

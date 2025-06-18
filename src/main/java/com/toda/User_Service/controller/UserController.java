@@ -90,7 +90,7 @@ public class UserController {
     public ResponseEntity<ApiGenericResponse<Map<String, String>>> updateProfile(
             @AuthenticationPrincipal User user,
             @RequestPart(required = false) MultipartFile image,
-            @RequestPart(required = false) String nickname) {
+            @RequestParam(required = false) String nickname) {
         userService.updateProfile(user, image, nickname);
         Map<String, String> data = Map.of(
                 "nickname", user.getNickname(),
