@@ -40,7 +40,8 @@ public class SecurityConfig {
                                 "/api/user/reset-password",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
-                                "/swagger-ui.html").permitAll()
+                                "/swagger-ui.html",
+                                "/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 ).exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
